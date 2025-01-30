@@ -4,6 +4,7 @@ This is a simple python package to parse, collect, and collate parameters releva
 
 ## Installation
 Eventually: `pip install eacy`
+
 For now: clone this repo, then `pip install .` in the `eacy` directory.
 
 ## Requirements:
