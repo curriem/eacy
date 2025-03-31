@@ -465,8 +465,8 @@ class DETECTOR:
         # interpolate onto our wavelength grid
         qe_vis = interp_arr(qe_vis_lam, qe_vis, self.lam)
 
-        rn_vis = vis_imager["RN"][0]  # electrons/pix      * u.Unit(vis_imager["RN"][1])
-        dc_vis = vis_imager["DC"][0]  # electrons/pix/s    * u.Unit(vis_imager["DC"][1])
+        rn_vis = float(vis_imager["RN"][0])  # electrons/pix      * u.Unit(vis_imager["RN"][1])
+        dc_vis = float(vis_imager["DC"][0])  # electrons/pix/s    * u.Unit(vis_imager["DC"][1])
         cic_vis = None  # NOT IMPLEMENTED YET
 
         # save parameters as class properties
@@ -484,12 +484,8 @@ class DETECTOR:
         # interpolate onto our wavelength grid
         qe_nir = interp_arr(qe_nir_lam, qe_nir, self.lam)
 
-        rn_nir = nir_imager["RN"][
-            0
-        ]  # electrons/pix        * u.Unit(nir_imager["RN"][1])
-        dc_nir = nir_imager["DC"][
-            0
-        ]  # electrons/pix/s       * u.Unit(nir_imager["DC"][1])
+        rn_nir = float(nir_imager["RN"][0])  # electrons/pix        * u.Unit(nir_imager["RN"][1])
+        dc_nir = float(nir_imager["DC"][0])  # electrons/pix/s       * u.Unit(nir_imager["DC"][1])
         cic_nir = None  # NOT IMPLEMENTED YET
 
         # save parameters as class properties
@@ -508,14 +504,12 @@ class DETECTOR:
         qe_vis_fl = vis_ifs["QE"]
         qe_vis_dict = load_yaml(detectors_path + qe_vis_fl.split("/")[-1])
         qe_vis = qe_vis_dict["QE"]
-        print(qe_vis)
         qe_vis_lam = qe_vis_dict["wavelength"] * u.nm
         # interpolate onto our wavelength grid
         qe_vis = interp_arr(qe_vis_lam, qe_vis, self.lam)
-        print(qe_vis)
 
-        rn_vis = vis_ifs["RN"][0]  # electrons/pix
-        dc_vis = vis_ifs["DC"][0]  # electrons/pix/s
+        rn_vis = float(vis_ifs["RN"][0])  # electrons/pix
+        dc_vis = float(vis_ifs["DC"][0])  # electrons/pix/s
         cic_vis = None  # NOT IMPLEMENTED YET
 
         # save parameters as class properties
@@ -533,8 +527,8 @@ class DETECTOR:
         # interpolate onto our wavelength grid
         qe_nir = interp_arr(qe_nir_lam, qe_nir, self.lam)
 
-        rn_nir = nir_ifs["RN"][0]  # electrons/pix
-        dc_nir = nir_ifs["DC"][0]  # electrons/pix/s
+        rn_nir = float(nir_ifs["RN"][0])  # electrons/pix
+        dc_nir = float(nir_ifs["DC"][0])  # electrons/pix/s
         cic_nir = None  # NOT IMPLEMENTED YET
 
         # save parameters as class properties
