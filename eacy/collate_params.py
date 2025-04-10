@@ -44,7 +44,7 @@ def interp_arr(old_lam, old_vals, new_lam):
     old_lam = old_lam.to(new_lam.unit)
     assert old_lam.unit == new_lam.unit
     interp_func = interp1d(
-        old_lam, old_vals, kind="linear", bounds_error=False, fill_value=0
+        old_lam, old_vals, kind="linear", bounds_error=False, fill_value=np.nan
     )
     new_vals = interp_func(new_lam)
     new_vals = np.clip(new_vals, 0, None)  # clip negative values to 0
@@ -75,8 +75,9 @@ plotting = False
 
 
 class TELESCOPE:
-    def __init__(self, lam):
+    def __init__(self, lam, verbose=False):
         self.lam = lam
+        self.verbose = verbose
 
     def plot(self):
         fig, axes = plt.subplots(2, 1, sharex=True, sharey=True)
@@ -91,7 +92,8 @@ class TELESCOPE:
     def load_EAC1(self):
 
         eac1_fl = "/obs_config/Tel/EAC1.yaml"
-        print(f"Loading file: {eac1_fl}")
+        if self.verbose:
+            print(f"Loading file: {eac1_fl}")
         eac1_dict = load_yaml(eac1_fl)
 
         diam_insc = eac1_dict["PM"]["inscribing_diameter"][
@@ -100,8 +102,8 @@ class TELESCOPE:
         diam_circ = eac1_dict["PM"]["circumscribing_diameter"][
             0
         ]  # meters * u.Unit(eac1_dict["PM"]["circumscribing_diameter"][1])
-
-        print("Calculating telescope throughput...")
+        if self.verbose:
+            print("Calculating telescope throughput...")
         # M1 reflectivity
         M1_reflectivity_fl = eac1_dict["PM"]["reflectivity"]
         M1_reflectivity_dict = load_yaml(
@@ -123,16 +125,16 @@ class TELESCOPE:
         M2_refl = interp_arr(M2_lam, M2_refl, self.lam)
 
         # M3 reflectivity
-        print("Warning: M3 reflectivity not included in YAML")
+        if self.verbose:
+            print("Warning: M3 reflectivity not included in YAML")
         M3_refl = np.ones_like(self.lam.value)
 
         # M4 reflectivity
-        print("Warning: M4 reflectivity not included in YAML")
+        if self.verbose:
+            print("Warning: M4 reflectivity not included in YAML")
         M4_refl = np.ones_like(self.lam.value)
 
         total_tele_refl = M1_refl * M2_refl * M3_refl * M4_refl
-
-        print("Done.")
 
         # save parameters as class properties
         self.diam_insc = diam_insc
@@ -164,8 +166,10 @@ class TELESCOPE:
 
 
 class CI:
-    def __init__(self, lam):
-        print("Initializing Coronagraph Instrument")
+    def __init__(self, lam, verbose=False):
+        self.verbose = verbose
+        if self.verbose:
+            print("Initializing Coronagraph Instrument")
         self.lam = lam  # the native wavelength grid we are working in (in um)
 
     def plot(self):
@@ -200,7 +204,8 @@ class CI:
 
     def calculate_throughput(self):
         ci_fl = "/obs_config/CI/CI.yaml"
-        print(f"Loading file: {ci_fl}\n")
+        if self.verbose:
+            print(f"Loading file: {ci_fl}\n")
 
         # Full optical Path: 'PM','SM','TCA','TCA','TCA','TCA','wave_beamsplitter', 'pol_beamsplitter', 'FSM', 'OAPs_forward', 'OAPs_forward', 'DM1', 'DM2', 'OAPs_forward', 'Fold', 'OAPs_back', 'Apodizer', 'OAPs_back', 'Focal_Plane_Mask', 'OAPs_back', 'Lyot_Stop', 'OAPs_back', 'Field_Stop', 'OAPs_back', 'filters', 'OAPs_back', 'Detector'
         OP_full_txt = [
@@ -268,10 +273,11 @@ class CI:
         self.OP_det = OP_det_txt
 
         ci_dict = load_yaml(ci_fl)
-        print("Optical path:")
-        print(ci_dict["opticalpath"]["full_path"])
+        if self.verbose:
+            print("Optical path:")
+            print(ci_dict["opticalpath"]["full_path"])
 
-        print("Calculating throughput...")
+            print("Calculating throughput...")
 
         # TCA
         TCA_reflectivity_fl = ci_dict["TCA"]["reflectivity"]
@@ -432,9 +438,11 @@ class CI:
         self.filters = filters
 
         total_inst_refl = np.ones_like(self.lam.value)
-        print("Calculating instrument throughput...")
+        if self.verbose:
+            print("Calculating instrument throughput...")
         for element in OP_inst_txt:
-            print(f"--including {element}")
+            if self.verbose:
+                print(f"--including {element}")
             refl_temp = self.__dict__[element]
             total_inst_refl *= refl_temp
         self.total_inst_refl = total_inst_refl
@@ -443,16 +451,18 @@ class CI:
         # Full optical Path: 'PM','SM','TCA','TCA','TCA','TCA','wave_beamsplitter', 'pol_beamsplitter', 'FSM', 'OAPs_forward', 'OAPs_forward', 'DM1', 'DM2', 'OAPs_forward', 'Fold', 'OAPs_back', 'Apodizer', 'OAPs_back', 'Focal_Plane_Mask', 'OAPs_back', 'Lyot_Stop', 'OAPs_back', 'Field_Stop', 'OAPs_back', 'filters', 'OAPs_back', 'Detector'
         # total_inst_refl = TCA_refl * TCA_refl * TCA_refl * TCA_refl * (wb_tran + wb_refl) * pb_refl * FSM_refl * OAPsf_refl * OAPsf_refl * DM1_refl * DM2_refl * OAPsf_refl * Fold_refl * OAPsb_refl * Apodizer_refl * OAPsb_refl * FPM_refl * OAPsb_refl * Lyot_refl * OAPsb_refl * FStop_refl * OAPsb_refl * filters * OAPsb_refl
 
-        print("Done loading coronagraph.")
+        if self.verbose:
+            print("Done loading coronagraph.")
 
 
 class DETECTOR:
-    def __init__(self, lam):
+    def __init__(self, lam, verbose=False):
         self.lam = lam
+        self.verbose = verbose
 
     def load_imager(self):
-
-        print("Loading Broadband Imager...")
+        if self.verbose:
+            print("Loading Broadband Imager...")
 
         ci_dict = load_yaml("/obs_config/CI/CI.yaml")
 
@@ -495,7 +505,8 @@ class DETECTOR:
         self.cic_nir = cic_nir
 
     def load_IFS(self):
-        print("Loading IFS...")
+        if self.verbose:
+            print("Loading IFS...")
 
         ci_dict = load_yaml("/obs_config/CI/CI.yaml")
 
@@ -557,8 +568,8 @@ class DETECTOR:
         print(f"DC: {self.dc_nir}")
 
 
-def load_telescope(telescope_name, internal_lam=internal_lam, plotting=False):
-    telescope = TELESCOPE(internal_lam)
+def load_telescope(telescope_name, internal_lam=internal_lam, plotting=False, verbose=False):
+    telescope = TELESCOPE(internal_lam, verbose=verbose)
     if telescope_name == "EAC1":
         telescope.load_EAC1()
     elif telescope_name == "EAC2":
@@ -574,9 +585,9 @@ def load_telescope(telescope_name, internal_lam=internal_lam, plotting=False):
     return telescope
 
 
-def load_instrument(instrument_name, internal_lam=internal_lam, plotting=False):
+def load_instrument(instrument_name, internal_lam=internal_lam, plotting=False, verbose=False):
     # Assuming CI for now, but you could extend this for other instruments
-    instrument = CI(internal_lam)
+    instrument = CI(internal_lam, verbose=verbose)
     instrument.calculate_throughput()
 
     if plotting:
@@ -585,8 +596,8 @@ def load_instrument(instrument_name, internal_lam=internal_lam, plotting=False):
     return instrument
 
 
-def load_detector(detector_name, internal_lam=internal_lam, plotting=False):
-    detector = DETECTOR(internal_lam)
+def load_detector(detector_name, internal_lam=internal_lam, plotting=False, verbose=False):
+    detector = DETECTOR(internal_lam, verbose=verbose)
     if detector_name == "IMAGER":
         detector.load_imager()
     elif detector_name == "IFS":
