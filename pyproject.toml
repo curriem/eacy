@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "eacy"
+version = "1.0.0"
+description = "This is a simple python package to parse, collect, and collate parameters relevant to the Habitable Worlds Observatory Exploratory Analytic Cases into an object-oriented python framework."
+readme = "README.md"
+authors = [{name = "Miles Currie", email = "miles.h.currie@nasa.gov"}]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
+requires-python = ">=3.6"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "pandas",
+    "astropy",
+    "tqdm",
+    "joblib",
+]
+[project.urls]
+"Homepage" = "https://github.com/curriem/eacy"
+"Bug Tracker" = "https://github.com/curriem/eacy/issues"
+[tool.setuptools]
+packages = ["eacy"]
